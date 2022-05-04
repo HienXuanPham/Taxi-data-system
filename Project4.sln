@@ -1,31 +1,159 @@
-﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31410.357
-MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Project4", "Project4\Project4.vcxproj", "{8B17AFB1-2476-423B-8BFE-12508F628AB5}"
-EndProject
-Global
-	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|x64 = Debug|x64
-		Debug|x86 = Debug|x86
-		Release|x64 = Release|x64
-		Release|x86 = Release|x86
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{8B17AFB1-2476-423B-8BFE-12508F628AB5}.Debug|x64.ActiveCfg = Debug|x64
-		{8B17AFB1-2476-423B-8BFE-12508F628AB5}.Debug|x64.Build.0 = Debug|x64
-		{8B17AFB1-2476-423B-8BFE-12508F628AB5}.Debug|x86.ActiveCfg = Debug|Win32
-		{8B17AFB1-2476-423B-8BFE-12508F628AB5}.Debug|x86.Build.0 = Debug|Win32
-		{8B17AFB1-2476-423B-8BFE-12508F628AB5}.Release|x64.ActiveCfg = Release|x64
-		{8B17AFB1-2476-423B-8BFE-12508F628AB5}.Release|x64.Build.0 = Release|x64
-		{8B17AFB1-2476-423B-8BFE-12508F628AB5}.Release|x86.ActiveCfg = Release|Win32
-		{8B17AFB1-2476-423B-8BFE-12508F628AB5}.Release|x86.Build.0 = Release|Win32
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {2DD854CE-F386-4499-95ED-C1F685E9D690}
-	EndGlobalSection
-EndGlobal
+#include <iostream>
+#include <cstdlib>
+#include <cstring>
+#include <ctime>
+#include <fstream>
+#include <cctype>
+
+using namespace std;
+
+class TaxiData {
+private:
+	string taxiID, driveName, maker, model, color, licenseNum;
+	int num_passenger = 0;
+	int call = 0;
+	static int countPassenger;
+public:
+	TaxiData() {}
+	TaxiData(string ID, string driver, string mk, string md, string cl, string license) {
+		taxiID = ID;
+		driveName = driver;
+		maker = mk;
+		model = md;
+		color = cl;
+		licenseNum = license;
+	}
+	int randomPassenger(); //The number of passengers is randomly decided
+	string getID() { return taxiID; }
+	string getdriver() { return driveName; }
+	string getmaker() { return maker; }
+	string getmodel() { return model; }
+	string getcolor() { return color; }
+	int getnum() { return num_passenger; }
+	int getcount() { return countPassenger; }
+	int getcall() { return call; }
+	void operator += (int p);
+	void operator ++ ();
+	friend bool operator < (const TaxiData& p1, const TaxiData& p2); // find the taxi has the most passenger.
+	friend bool operator == (const TaxiData& q1, const TaxiData& q2); //check if there are more than one taxi that have the most passengers.
+};
+string to_lower(string s); 
+int randomTaxi(); //A taxi is randomly selected when the request is received
+const int len = 6;
+int main()
+{
+	TaxiData TAXI;
+	TaxiData taxi[len] = { {"CTC0001", "Luffy", "Ford", "Escape", "black", "TAC 0001"},
+	{"CTC0002", "Zoro", "Ford", "Explorer", "red", "TAC 0002"},
+	{"CTC0003", "Nami", "BMW", "X7", "black", "TAC 0003"},
+	{"CTC0004", "Usopp", "Toyota", "Pilot", "white", "TAC 0004"},
+	{"CTC0005", "Sanji", "Kia", "Sorento", "gray", "TAC 0005"},
+	{"CTC0006", "Chopper", "Hyundai", "Palisade", "black", "TAC 0006"} };
+
+	cout << "Welcome to CTC.\n";
+	string y_n;
+	int n = 0, num = 0;
+	srand(time(NULL));
+	do {
+		cout << "Do you need a taxi? \n", cin >> y_n;
+		y_n = to_lower(y_n);
+		if (y_n == "y" || y_n == "yes") {
+			n = randomTaxi();
+			taxi[n].operator++(); //increasing taxi's call
+
+			cout << "Taxi " << taxi[n].getID() << " a " << taxi[n].getcolor() << " " << taxi[n].getmaker() << " "
+				<< taxi[n].getmodel() << " driven by " << taxi[n].getdriver() << " will pick you up in a few minutes.\n";
+
+			int num = taxi[n].randomPassenger();
+			cout << "(Taxi " << taxi[n].getID() << " determined that there were " << num << " passengers.)\n\n";
+		}
+	} while (y_n == "y" || y_n == "yes");
+
+	ofstream taxifile; //create a file and write information into that file
+	taxifile.open("CTC.dat", ios::app);
+
+	cout << "\nCTC served a total of " << TAXI.getcount() << " passengers today.\n";
+	taxifile << "CTC served a total of " << TAXI.getcount() << " passengers today.\n\n";
+
+	for (int i = 0; i < len; i++) {
+		taxifile << taxi[i].getID() << "\t\t\t\t";
+		cout << taxi[i].getID() << "\t\t\t";
+	}
+	taxifile << endl;
+	cout << endl;
+	for (int i = 0; i < len; i++) {
+		taxifile << taxi[i].getcall() << " Calls \t\t\t";
+		cout << taxi[i].getcall() << " Calls \t\t";
+	}
+	taxifile << endl;
+	cout << endl;
+	for (int i = 0; i < len; i++) {
+		taxifile << taxi[i].getnum() << " Passengers \t\t";
+		cout << taxi[i].getnum() << " Passengers \t\t";
+	}
+
+	TaxiData max = taxi[0];
+	int r = 0;
+	for (int m = 1; m < len; m++) {
+		if (operator<(max, taxi[m])) {
+			max = taxi[m];
+			r = m; // keep tracking the index of the taxi that has the most passengers
+		}
+	}
+	string* a = NULL;
+	a = new string[len]; //to store a taxi's ID if there is more than one taxi that has the most passengers.
+	int index = 1;
+	a[0] = max.getID();
+	int j = r + 1; //check from the right of the array if there is any taxi has the most passenger equal max
+	for (j; j < len; j++) {
+		if (operator==(max, taxi[j])) {
+			a[index] = taxi[j].getID();
+			index++;
+		}
+	}
+	for (int i = 0; i < index; i++) {
+		cout << "\n\nToday " << a[i] << " served most passengers.\n";
+		taxifile << "\n\nToday " << a[i] << " served most passengers.\n";
+	}
+	delete[] a; //free memory
+
+	int aver = floor(TAXI.getcount() / 6);
+	cout << "Today on average each taxi served " << aver << " passengers.\n";
+	taxifile << "Today on average each taxi served " << aver << " passengers.\n\n";
+	taxifile.close();
+}
+
+string to_lower(string s) {
+	for (int i = 0; i < s.length(); i++) {
+		if (isupper(s[i])) {
+			s[i] = tolower(s[i]);
+		}
+	}
+	return s;
+}
+
+int TaxiData::countPassenger = 0;
+void TaxiData::operator += (int p) {
+	num_passenger += p;
+}
+
+int TaxiData::randomPassenger() {
+	int passenger = rand() % len + 1;
+	operator += (passenger); //the total number of passengers served by each taxi
+	countPassenger += passenger; //the total number of passengers served by the entire company
+	return passenger;
+}
+int randomTaxi() {
+	return rand() % len;
+}
+bool operator < (const TaxiData& p1, const TaxiData& p2) {
+	return (p1.num_passenger < p2.num_passenger);
+}
+
+void TaxiData::operator++() {
+	call++;
+}
+
+bool operator == (const TaxiData& q1, const TaxiData& q2) {
+	return (q1.num_passenger == q2.num_passenger);
+}
